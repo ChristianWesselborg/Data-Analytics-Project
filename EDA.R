@@ -127,31 +127,32 @@ cittot <- cit[1:474, ]
 
 colnames(cittot) <- colnames(cit)
 cittot$PlaceName <- names
+cittot[, -c(1, 2)] <- 0
 
 combiner <- function(data){
   x <- 0 #population holder
   y <- 0 #value holder
   y.2 <- 1:(ncol(cittot) - 4) #running total holder
-  z <- 0 #couty population holder
+  z <- 0 #county population holder
   
-  for(i in 1:nrow(cittot)){
-    for(j in 1:nrow(cit)){
-      if(cittot[i, 1] == cit[j, 1]){
-        for(k in 4:ncol(cittot)){
-          z <- as.numeric(cit[j, 3])
-          y <- as.numeric(cit[j, k]/100 * z)
+  for(i in 1:nrow(cittot)){ #every city name
+    for(j in 1:nrow(cit)){ #every observation in origional
+      if(cittot[i, 1] == cit[j, 1]){ #if the place name matches
+        cittot[i, 2] <- cit[j, 2]
+        z <- as.numeric(cit[j, 3]) #county population
+        for(k in 4:ncol(cittot)){ #every variable to be calculated
+          y <- as.numeric(cit[j, k]/100 * z) #get the population value of that area for each variable
           
-          cittot[i, k] <- cit[i, k] + y
+          cittot[i, k] <- cittot[i, k] + y #add to the data so sum can be collected
         }
-        x <- x + cit[j, 3]
+        x <- x + cit[j, 3] #get population value
       }
       else{
       }
     }
-    cittot[i, 3] <- x
-    print(x)
+    cittot[i, 3] <- x #finalize population value
     for(k in 4:ncol(cittot)){
-      cittot[i, k] <- cittot[i, k]/x * 100
+      cittot[i, k] <- cittot[i, k]/x * 100 #readjust based on total population
     }
     print(i)
     y <- 0
@@ -160,7 +161,92 @@ combiner <- function(data){
   }
 }
 
-lapply(cittot, combiner)
+combiner(cittot)
 
-#here it is
-assign('', envir = global.env)
+summary(cit[cit$PlaceName == "Abilene",])
+
+#plots with combined data
+
+ggplot() +
+  geom_histogram(aes(x = cittot$CANCER_CrudePrev))
+
+ggplot() +
+  geom_histogram(aes(x = cittot$Population2010))
+
+ggplot() +
+  geom_point(aes(x = cittot[cittot$Population2010 < 1e05, ]$Population2010, y = cittot[cittot$Population2010 < 1e05, ]$CANCER_CrudePrev))
+
+#fips map with combined data
+library(maps)
+data("county.fips")
+
+citcol <- cittot
+
+citcol$col <- cittot$CANCER_CrudePrev/max(cittot$CANCER_CrudePrev)
+summary(citcol$col)
+
+citcol$coler <- grey(cit$CANCER_CrudePrev/max(citcol$CANCER_CrudePrev))
+
+citcol$coler2 <- 255 * (cittot$CANCER_CrudePrev/max(citcol$CANCER_CrudePrev))
+
+map("county", fill=TRUE, col= rgb(0/255, citcol$coler2/255, 0/255, 1))
+
+#pca
+library(corpcor)
+library(GPArotation)
+library(psych)
+
+dim(na.omit(cittot))
+
+cit_mat <- cor(na.omit(cittot[, 3:25]))
+cit_mat
+
+cortest.bartlett(na.omit(cittot[, 3:25]), n = 368)
+
+kmo = function( data ){
+  library(MASS) 
+  X <- cor(as.matrix(data)) 
+  iX <- ginv(X) 
+  S2 <- diag(diag((iX^-1)))
+  AIS <- S2%*%iX%*%S2                      # anti-image covariance matrix
+  IS <- X+AIS-2*S2                         # image covariance matrix
+  Dai <- sqrt(diag(diag(AIS)))
+  IR <- ginv(Dai)%*%IS%*%ginv(Dai)         # image correlation matrix
+  AIR <- ginv(Dai)%*%AIS%*%ginv(Dai)       # anti-image correlation matrix
+  a <- apply((AIR - diag(diag(AIR)))^2, 2, sum)
+  AA <- sum(a) 
+  b <- apply((X - diag(nrow(X)))^2, 2, sum)
+  BB <- sum(b)
+  MSA <- b/(b+a)                        # indiv. measures of sampling adequacy
+  AIR <- AIR-diag(nrow(AIR))+diag(MSA)  # Examine the anti-image of the correlation matrix. That is the  negative of the partial correlations, partialling out all other variables.
+  kmo <- BB/(AA+BB)                     # overall KMO statistic
+  # Reporting the conclusion 
+  if (kmo >= 0.00 && kmo < 0.50){test <- 'The KMO test yields a degree of common variance unacceptable for FA.'} 
+  else if (kmo >= 0.50 && kmo < 0.60){test <- 'The KMO test yields a degree of common variance miserable.'} 
+  else if (kmo >= 0.60 && kmo < 0.70){test <- 'The KMO test yields a degree of common variance mediocre.'} 
+  else if (kmo >= 0.70 && kmo < 0.80){test <- 'The KMO test yields a degree of common variance middling.' } 
+  else if (kmo >= 0.80 && kmo < 0.90){test <- 'The KMO test yields a degree of common variance meritorious.' }
+  else { test <- 'The KMO test yields a degree of common variance marvelous.' }
+  
+  ans <- list( overall = kmo,
+               report = test,
+               individual = MSA,
+               AIS = AIS,
+               AIR = AIR )
+  return(ans)
+} 
+
+kmo(na.omit(cittot[, 3:25]))
+
+det(cit_mat)
+
+pc1 <- principal(na.omit(cittot[, 3:25], nfactors = 6, rotate = "none"))
+pc1
+plot(pc1$values, type = "b")
+
+pc2 <- principal(na.omit(cittot[, 3:25], nfactors = 3, rotate = "none"))
+
+pc3 <- principal(na.omit(cittot[, 3:25], nfactors = 3, rotate = "oblimin"))
+print.psych(pc3, cut = 0.4, sort = TRUE)
+
+biplot(pc3)
