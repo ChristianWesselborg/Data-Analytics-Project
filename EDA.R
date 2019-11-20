@@ -137,6 +137,7 @@ combiner <- function(data){
   
   for(i in 1:nrow(cittot)){ #every city name
     for(j in 1:nrow(cit)){ #every observation in origional
+      print(j)
       if(cittot[i, 1] == cit[j, 1]){ #if the place name matches
         cittot[i, 2] <- cit[j, 2]
         z <- as.numeric(cit[j, 3]) #county population
@@ -163,7 +164,7 @@ combiner <- function(data){
 
 combiner(cittot)
 
-summary(cit[cit$PlaceName == "Abilene",])
+write.table(cittot, file = "C:/Classes/4F19/Data Analytics/Assignment 6/Combined 500 Cities Data.csv", sep = ",", row.names = F)
 
 #plots with combined data
 
