@@ -14,8 +14,16 @@ summary(cities$Population2010)
 ggplot(data = cities) +
   geom_boxplot(aes(x = "Population2010", y = Population2010))
 
-cit <- cities[, c(2, 3, 6, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49)]
+cit <- cities[, c(2, 3, 6, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63)]
 
+cit$Geolocation %>% extract(cit$Geolocation, c("Latitude", "Longitude"), "\\(([^,]+), ([^)]+)\\)")
+
+intermediate <- read.table(text=gsub('[()]', '', cit$Geolocation), 
+           sep=",", col.names=c('Latitute', 'Longitude'))
+
+cit <- cbind(cit, intermediate)
+
+cit <- cit[, -32]
 #Plots
 head(cities$ACCESS2_CrudePrev)
 summary(cities$ACCESS2_CrudePrev)
@@ -52,7 +60,7 @@ ggplot(data = cities) +
 ggplot(data = cities) +
   geom_histogram(aes(x = cities$SLEEP_CrudePrev))
 
-#classification
+#classification - defunct
 
 ggplot(data = cities) +
   geom_boxplot(aes(x = "Population2010", y = Population2010))
@@ -97,7 +105,7 @@ summary(cancer_pop)
 anova <- aov(cit$CANCER_CrudePrev ~ cit$PlaceName)
 summary(anova)
 
-#fips map
+#fips map - defunct
 library(maps)
 
 county.fips(cit$PlaceFIPS)
@@ -127,32 +135,32 @@ cittot <- cit[1:474, ]
 
 colnames(cittot) <- colnames(cit)
 cittot$PlaceName <- names
-cittot[, -c(1, 2)] <- 0
+cittot[, -c(1, 2, 32, 33)] <- 0
 
 combiner <- function(data){
   x <- 0 #population holder
   y <- 0 #value holder
-  y.2 <- 1:(ncol(cittot) - 4) #running total holder
   z <- 0 #county population holder
   
   for(i in 1:nrow(cittot)){ #every city name
     for(j in 1:nrow(cit)){ #every observation in origional
-      print(j)
       if(cittot[i, 1] == cit[j, 1]){ #if the place name matches
         cittot[i, 2] <- cit[j, 2]
         z <- as.numeric(cit[j, 3]) #county population
-        for(k in 4:ncol(cittot)){ #every variable to be calculated
+        for(k in 4:(ncol(cittot) - 2)){ #every variable to be calculated less 2 (lat,long)
           y <- as.numeric(cit[j, k]/100 * z) #get the population value of that area for each variable
           
           cittot[i, k] <- cittot[i, k] + y #add to the data so sum can be collected
         }
-        x <- x + cit[j, 3] #get population value
+        cittot[i, 32] <- (cit[j, 32] + cittot[i, 32])/2
+        cittot[i, 33] <- (cit[j, 33] + cittot[i, 33])/2
+        x <- x + cit[j, 3] #running total population value
       }
       else{
       }
     }
     cittot[i, 3] <- x #finalize population value
-    for(k in 4:ncol(cittot)){
+    for(k in 4:(ncol(cittot) - 2)){
       cittot[i, k] <- cittot[i, k]/x * 100 #readjust based on total population
     }
     print(i)
