@@ -6,6 +6,8 @@
 #11-21-19 added potential improvements to the maps function including new data set with polygons - not quite working yet
 #11-22-19 updated maping fuctions
 #11-29-19 cleaned map code - PCA updated, promising result
+#12-05-19 maps for poster made
+#12-15-19 cleanup on PCA - Map updates
 ####setup####
 rm(list = ls())
 cittot <- read.csv("C:/Classes/4F19/Data Analytics/Assignment 6/Combined 500 Cities Data.csv")
@@ -25,6 +27,19 @@ intermediate <- read.table(text=gsub('[()]', '', cit$Geolocation),
 
 cit <- cbind(cit, intermediate)
 ####plots for poster####
+
+#Scatter plots
+
+ggplot() +
+  geom_hex(aes(x = cit$CANCER_CrudePrev, y = cit$ARTHRITIS_CrudePrev)) +
+  labs(x = "Cancer Rate (%)", y = "Arthritis Rate (%)", title = "Arthritis vs. Cancer Density Plot") +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_hex(aes(x = cit$MHLTH_CrudePrev, y = cit$DENTAL_CrudePrev)) +
+  labs(x = "Poor Mental Health Rate (%)", y = "Prevalence of Dental Visits (%)", title = "Mental Health vs. Dental") +
+  theme(text = element_text(size=24))
+
 #try new maps function
 #potential rework
 colnames(cit)[5]
@@ -90,16 +105,32 @@ names(cit)[names(cit) == "Place_TractID"] <- "plctract10"
 city_data2 <- left_join(city_data, cit, by = "plctract10")
 
 ggplot() +
-  geom_polygon(data = city_data2[city_data2$PlaceName.x == "New York", ], aes(x = long, y = lat, group = group, fill = city_data2[city_data2$PlaceName.x == "New York", ]$CANCER_CrudePrev))
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == "New York", ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == "New York", ]$CANCER_CrudePrev)) +
+  scale_fill_gradientn(name = "Cancer Rate %", colours = c("grey13", "cyan"), values = c(0, .5, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = "Rates of Cancer in New York") +
+  theme(text = element_text(size=24))
 
+city_data2$PlcTrPop10 <- as.numeric(city_data2$PlcTrPop10)
 ggplot() +
-  geom_polygon(data = city_data2[city_data2$PlaceName.x == "New York", ], aes(x = long, y = lat, group = group, fill = city_data2[city_data2$PlaceName.x == "New York", ]$PlcTrPop10))
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == "New York", ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == "New York", ]$PlcTrPop10)) +
+  scale_fill_gradientn(name = "Population", colours = c("royalblue4", "limegreen"), values = c(0, .4, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = "Population in New York") +
+  theme(text = element_text(size=24))
 
 ggplot() +
   geom_polygon(data = city_data2[city_data2$PlaceName.x == "New York", ], aes(x = long, y = lat, group = group, fill = city_data2[city_data2$PlaceName.x == "New York", ]$CASTHMA_CrudePrev))
 
 ggplot() +
-  geom_polygon(data = city_data2, aes(x = long, y = lat, group = group, fill = city_data2$PlcTrPop10))
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == "New York", ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == "New York", ]$CASTHMA_CrudePrev)) +
+  scale_fill_gradientn(name = "Asthma Rate %", colours = c("powderblue", "darkorchid1"), values = c(0, .4, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = "Rates of Asthma in New York") +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == "New York", ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == "New York", ]$OBESITY_CrudePrev)) +
+  scale_fill_gradientn(name = "Obesity Rate %", colours = c("darkslateblue", "cyan"), values = c(0, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = "Rates of Obesity in New York") +
+  theme(text = element_text(size=24))
 
 #more maps - keep for now
 library(acs)
@@ -133,17 +164,17 @@ map2<-leaflet() %>%
 map2
 
 
-  ####PCA####
+####PCA####
 library(corpcor)
 library(GPArotation)
 library(psych)
 
-dim(na.omit(cittot))
+dim(na.omit(cittot[, -c(1,2,32,33)]))
 
-cit_mat <- cor(na.omit(cittot[, -c(1, 2)]))
+cit_mat <- cor(na.omit(cittot[, -c(1,2,32,33)]))
 cit_mat
 
-cortest.bartlett(na.omit(cittot[, -c(1, 2)]), n = 330)
+cortest.bartlett(na.omit(cittot[, -c(1,2,32,33)]), n = 330)
 
 kmo = function( data ){
   library(MASS) 
@@ -178,31 +209,62 @@ kmo = function( data ){
   return(ans)
 } 
 
-kmo(na.omit(cittot[, -c(1, 2)]))
+kmo(na.omit(cittot[, -c(1,2,32,33)]))
 
 det(cit_mat)
 
+####PCA with county data####
+#determining data quality
+dim(na.omit(cit[, -c(1, 2, 3, 4, 5, 35, 36, 37)]))
+
+cit_mat <- cor(na.omit(cit[, -c(1, 2, 3, 4, 5, 35, 36, 37)]))
+cit_mat
+
+cortest.bartlett(na.omit(cit[, -c(1, 2, 3, 4, 5, 35, 36, 37)]), n = 24866)
+
+kmo = function( data ){
+  library(MASS) 
+  X <- cor(as.matrix(data)) 
+  iX <- ginv(X) 
+  S2 <- diag(diag((iX^-1)))
+  AIS <- S2%*%iX%*%S2                      # anti-image covariance matrix
+  IS <- X+AIS-2*S2                         # image covariance matrix
+  Dai <- sqrt(diag(diag(AIS)))
+  IR <- ginv(Dai)%*%IS%*%ginv(Dai)         # image correlation matrix
+  AIR <- ginv(Dai)%*%AIS%*%ginv(Dai)       # anti-image correlation matrix
+  a <- apply((AIR - diag(diag(AIR)))^2, 2, sum)
+  AA <- sum(a) 
+  b <- apply((X - diag(nrow(X)))^2, 2, sum)
+  BB <- sum(b)
+  MSA <- b/(b+a)                        # indiv. measures of sampling adequacy
+  AIR <- AIR-diag(nrow(AIR))+diag(MSA)  # Examine the anti-image of the correlation matrix. That is the  negative of the partial correlations, partialling out all other variables.
+  kmo <- BB/(AA+BB)                     # overall KMO statistic
+  # Reporting the conclusion 
+  if (kmo >= 0.00 && kmo < 0.50){test <- 'The KMO test yields a degree of common variance unacceptable for FA.'} 
+  else if (kmo >= 0.50 && kmo < 0.60){test <- 'The KMO test yields a degree of common variance miserable.'} 
+  else if (kmo >= 0.60 && kmo < 0.70){test <- 'The KMO test yields a degree of common variance mediocre.'} 
+  else if (kmo >= 0.70 && kmo < 0.80){test <- 'The KMO test yields a degree of common variance middling.' } 
+  else if (kmo >= 0.80 && kmo < 0.90){test <- 'The KMO test yields a degree of common variance meritorious.' }
+  else { test <- 'The KMO test yields a degree of common variance marvelous.' }
+  
+  ans <- list( overall = kmo,
+               report = test,
+               individual = MSA,
+               AIS = AIS,
+               AIR = AIR )
+  return(ans)
+} 
+
+kmo(na.omit(cit[, -c(1, 2, 3, 4, 5, 35, 36, 37)]))
+
 det(cit_mat)
 
-
-pc1 <- principal(na.omit(cittot[, -c(1, 2)], nfactors = 6, rotate = "none"))
-pc1
-plot(pc1$values, type = "b")
-
-pc2 <- principal(na.omit(cittot[, 3:25], nfactors = 3, rotate = "none"))
-pc2
-
-pc3 <- principal(na.omit(cittot[, -c(1, 2, 32, 33, 12, 13, 6, 8, 16, 4 , 14, 10, 17, 21, 5, 29, 19, 26, 18, 25, 23, 31, 7, 20, 28, 9, 22, 11, 15)], nfactors = 3, rotate = "verimax"))
-print.psych(pc3, cut = 0.4, sort = TRUE)
-
-biplot(pc3)
-
-#PCA with county data
+#pca with county data
 library(corpcor)
 library(GPArotation)
 library(psych)
 
-cit_mat <- cor(na.omit(cit[, -c(1, 2, 3, 4, 5, 31, 35, 36, 37)]))
+cit_mat <- cor(na.omit(cit[, -c(1, 2, 3, 4, 5, 35, 36, 37)]))
 cit_mat
 
 round(cit_mat, 3)
@@ -211,7 +273,7 @@ det(cit_mat)
 
 pc1 <- principal(na.omit(cit[, -c(1,2,3,4,5,35,36,37)]), nfactors = 6, rotate = "none")
 pc1
-plot(pc1$values, type = "b")
+plot(pc1$values, type = "b", ylab = "Eigenvalues", main = "Scree Plot")
 abline(1,0)
 
 pc2 <- principal(na.omit(cit[, -c(1,2,3,4,5,35,36,37)]), nfactors = 3, rotate = "varimax")
@@ -220,16 +282,43 @@ print.psych(pc2, cut = 0.5, sort = TRUE)
 pc3 <- principal(na.omit(cit[, -c(1,2,3,4,5,6,35,36,37)]), nfactors = 3, rotate = "varimax")
 print.psych(pc3, cut = 0.5, sort = TRUE)
 
+pc3.0.1 <- principal(na.omit(cit[, -c(1,2,3,4,5,35,36,37)]), nfactors = 2, rotate = "varimax")
+print.psych(pc3.0.1, cut = 0.5, sort = TRUE)
+
+pc3.0.1 <- principal(na.omit(cit[, -c(1,2,3,4,5,6,27,30,35,36,37)]), nfactors = 2, rotate = "varimax")
+print.psych(pc3.0.1, cut = 0.5, sort = TRUE)
+
 pc3.1 <- principal(na.omit(cit[, -c(1,2,3,4,5,6,27,30,35,36,37)]), nfactors = 2, rotate = "varimax")
 print.psych(pc3.1, cut = 0.66, sort = TRUE)
-print.psych(pc3.1, cut = 0, sort = TRUE)
+print.psych(pc3.1, cut = 0.5, sort = TRUE)
 biplot(pc3.1)
+
+pc3.1.4 <- principal(na.omit(cit[, -c(1,2,3,4,5,6,9,27,30,35,36,37)]), nfactors = 2, rotate = "varimax")
+print.psych(pc3.1.4, cut = 0.67, sort = TRUE)
+print.psych(pc3.1.4, cut = 0.5, sort = TRUE)
+biplot(pc3.1.4, col = c("darkgray", "darkorchid2"))
+
+pc3.1.1 <- principal(na.omit(cit[, -c(1,2,3,4,5,6,9,27,30,35,36,37)]), nfactors = 2, rotate = "oblimin")
+print.psych(pc3.1.1, cut = 0.6, sort = TRUE)
+print.psych(pc3.1.1, cut = 0, sort = TRUE)
+biplot(pc3.1.1)
+
+pc3.1.3 <- principal(na.omit(cit[, -c(1,2,3,4,5,6,9,12,16,18,23,25,27,30,33,35,36,37)]), nfactors = 2, rotate = "varimax")
+print.psych(pc3.1.3, cut = 0.6, sort = TRUE)
+print.psych(pc3.1.3, cut = 0, sort = TRUE)
+biplot(pc3.1.3, col = c("darkgray", "darkorchid2"))
+
+#for biplot - not giving results
+pc3.1.2 <- principal(na.omit(cit[, c(28, 7, 20, 11, 15, 8)], nfactors = 2, rotate = "varimax"))
+print.psych(pc3.1.2, cut = 0, sort = TRUE)
+biplot(pc3.1.2)
 
 #PCA with city total data
 
 pca <- principal(na.omit(cittot[, -c(1,2,32,33)]), nfactors = 6, rotate = "none")
 pca
-plot(pca$values, type = "b")
+plot(pca$values, type = "b", ylab = "Eigenvalues", main = "City Total Scree Plot")
+abline(1,0)
 
 pcb <- principal(na.omit(cittot[, -c(1,2,32,33)]), nfactors = 3, rotate = "varimax")
 pcb
@@ -239,7 +328,7 @@ pcc <- principal(na.omit(cittot[, -c(1,2,32,33)]), nfactors = 2, rotate = "varim
 print.psych(pcc, cut = .5, sort = T)
 
 pcd <- principal(na.omit(cittot[, -c(1,2,3,6,32,33)]), nfactors = 3, rotate = "varimax")
-print.psych(pcd, cut = .5, sort = T)
+print.psych(pcd, cut = .6, sort = T)
 
 pce <- principal(na.omit(cittot[, -c(1,2,3,6,24,27,32,33)]), nfactors = 2, rotate = "varimax")
 print.psych(pce, cut = .5, sort = T)
@@ -247,6 +336,10 @@ print.psych(pce, cut = .5, sort = T)
 pce.1 <- principal(na.omit(cittot[, -c(1,2,3,6,24,27,32,33)]), nfactors = 2, rotate = "varimax")
 print.psych(pce.1, cut = .64, sort = T)
 biplot(pce.1)
+
+pcf <- principal(na.omit(cittot[, -c(1,2,3,6,10,24,27,32,33)]), nfactors = 2, rotate = "varimax")
+print.psych(pcf, cut = .62, sort = T)
+biplot(pcf)
 
 ####linear model####
 
