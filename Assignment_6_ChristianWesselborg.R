@@ -40,8 +40,7 @@ ggplot() +
   labs(x = "Poor Mental Health Rate (%)", y = "Prevalence of Dental Visits (%)", title = "Mental Health vs. Dental") +
   theme(text = element_text(size=24))
 
-#try new maps function
-#potential rework
+#potential rework - excess code
 colnames(cit)[5]
 colnames(cit)[5] <- "plctract10"
 
@@ -57,21 +56,10 @@ city_data <- left_join(cit, ggtract, by = "plctract10")
 
 ggplot() +
   geom_polygon(data = city_data, aes(x = Longitude, y = Latitute))
-#base code
-ggplot() +
-  geom_sf(count, mapping = aes(fill = "grey"))
-
-ggplot() +
-  geom_polygon(data = counties, aes(long, lat, group = group), color = "white", fill = "blue") +
-  geom_point(aes(x = cittot$Longitude, y = cittot$Latitute)) +
-  coord_map(projection = "albers", lat0 = 39, lat1 = 45)
-#maps again - may return
-
-library(sp)
-library(rgdal)
 
 #attempt to combine data based off stack overflow
 #very important load data mappers first, then load the following packages in the following order, then fortify works
+library(rgdal)
 library(ggplot2)
 library(rgeos)
 library(maptools)
@@ -98,7 +86,7 @@ ggplot() +
 
 ggplot() +
   geom_polygon(data = city_data[city_data$PlaceName == "New York", ], aes(x = long, y = lat, group = group))
-#Now we get into it
+#Now we get into it - poster maps
 
 names(cit)[names(cit) == "Place_TractID"] <- "plctract10"
 
@@ -132,11 +120,301 @@ ggplot() +
   labs(x = "Longitude", y = "Latitude", title = "Rates of Obesity in New York") +
   theme(text = element_text(size=24))
 
-#more maps - keep for now
+#maps for power point
+#New York
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == "New York", ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == "New York", ]$SLEEP_CrudePrev)) +
+  scale_fill_gradientn(name = "Sleep Deprivation Rate %", colours = c("darkslateblue", "cyan"), values = c(0, .9, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = "Rates of Sleep Deprivation in New York") +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == "New York", ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == "New York", ]$MHLTH_CrudePrev)) +
+  scale_fill_gradientn(name = "Mental Health Issues Rate %", colours = c("darkslateblue", "cyan"), values = c(0, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = "Rates of Mental Health Issues in New York") +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == "New York", ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == "New York", ]$STROKE_CrudePrev)) +
+  scale_fill_gradientn(name = "Stroke Rate %", colours = c("darkslateblue", "cyan"), values = c(0, .3, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = "Rates of Stroke in New York") +
+  theme(text = element_text(size=24))
+
+#Los Angeles
+p <- "Los Angeles"
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$PlcTrPop10)) +
+  scale_fill_gradientn(name = "Population", colours = c("royalblue4", "limegreen"), values = c(0, .4, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Population in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$CANCER_CrudePrev)) +
+  scale_fill_gradientn(name = "Cancer Rate %", colours = c("grey13", "cyan"), values = c(0, .5, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Cancer in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$CASTHMA_CrudePrev)) +
+  scale_fill_gradientn(name = "Asthma Rate %", colours = c("powderblue", "darkorchid1"), values = c(0, .4, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Asthma in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$OBESITY_CrudePrev)) +
+  scale_fill_gradientn(name = "Obesity Rate %", colours = c("royalblue4", "limegreen"), values = c(0, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Obesity in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$SLEEP_CrudePrev)) +
+  scale_fill_gradientn(name = "Sleep Deprivation Rate %", colours = c("grey13", "cyan"), values = c(0, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Sleep Deprivation in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$MHLTH_CrudePrev)) +
+  scale_fill_gradientn(name = "Mental Health Issues Rate %", colours = c("powderblue", "darkorchid1"), values = c(0, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Mental Health Issues in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$STROKE_CrudePrev)) +
+  scale_fill_gradientn(name = "Stroke Rate %", colours = c("darkslateblue", "cyan"), values = c(0, .3, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Stroke in", p)) +
+  theme(text = element_text(size=24))
+
+#Austin
+p <- "Austin"
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$PlcTrPop10)) +
+  scale_fill_gradientn(name = "Population", colours = c("royalblue4", "limegreen"), values = c(0, .4, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Population in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$CANCER_CrudePrev)) +
+  scale_fill_gradientn(name = "Cancer Rate %", colours = c("grey13", "cyan"), values = c(0, .5, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Cancer in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$CASTHMA_CrudePrev)) +
+  scale_fill_gradientn(name = "Asthma Rate %", colours = c("powderblue", "darkorchid1"), values = c(0, .4, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Asthma in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$OBESITY_CrudePrev)) +
+  scale_fill_gradientn(name = "Obesity Rate %", colours = c("royalblue4", "limegreen"), values = c(0, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Obesity in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$SLEEP_CrudePrev)) +
+  scale_fill_gradientn(name = "Sleep Deprivation Rate %", colours = c("grey13", "cyan"), values = c(0, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Sleep Deprivation in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$MHLTH_CrudePrev)) +
+  scale_fill_gradientn(name = "Mental Health Issues Rate %", colours = c("powderblue", "darkorchid1"), values = c(0, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Mental Health Issues in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$STROKE_CrudePrev)) +
+  scale_fill_gradientn(name = "Stroke Rate %", colours = c("darkslateblue", "cyan"), values = c(0, .3, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Stroke in", p)) +
+  theme(text = element_text(size=24))
+
+#Philadelphia
+p <- "Philadelphia"
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$PlcTrPop10)) +
+  scale_fill_gradientn(name = "Population", colours = c("royalblue4", "limegreen"), values = c(0, .4, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Population in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$CANCER_CrudePrev)) +
+  scale_fill_gradientn(name = "Cancer Rate %", colours = c("grey13", "cyan"), values = c(0, .5, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Cancer in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$CASTHMA_CrudePrev)) +
+  scale_fill_gradientn(name = "Asthma Rate %", colours = c("powderblue", "darkorchid1"), values = c(0, .4, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Asthma in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$OBESITY_CrudePrev)) +
+  scale_fill_gradientn(name = "Obesity Rate %", colours = c("royalblue4", "limegreen"), values = c(0, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Obesity in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$SLEEP_CrudePrev)) +
+  scale_fill_gradientn(name = "Sleep Deprivation Rate %", colours = c("grey13", "cyan"), values = c(0, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Sleep Deprivation in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$MHLTH_CrudePrev)) +
+  scale_fill_gradientn(name = "Mental Health Issues Rate %", colours = c("powderblue", "darkorchid1"), values = c(0, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Mental Health Issues in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$STROKE_CrudePrev)) +
+  scale_fill_gradientn(name = "Stroke Rate %", colours = c("darkslateblue", "cyan"), values = c(0, .3, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Stroke in", p)) +
+  theme(text = element_text(size=24))
+
+#Sioux Falls
+p <- "Sioux Falls"
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$PlcTrPop10)) +
+  scale_fill_gradientn(name = "Population", colours = c("royalblue4", "limegreen"), values = c(0, .4, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Population in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$CANCER_CrudePrev)) +
+  scale_fill_gradientn(name = "Cancer Rate %", colours = c("grey13", "cyan"), values = c(0, .5, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Cancer in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$CASTHMA_CrudePrev)) +
+  scale_fill_gradientn(name = "Asthma Rate %", colours = c("powderblue", "darkorchid1"), values = c(0, .4, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Asthma in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$OBESITY_CrudePrev)) +
+  scale_fill_gradientn(name = "Obesity Rate %", colours = c("royalblue4", "limegreen"), values = c(0, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Obesity in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$SLEEP_CrudePrev)) +
+  scale_fill_gradientn(name = "Sleep Deprivation Rate %", colours = c("grey13", "cyan"), values = c(0, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Sleep Deprivation in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$MHLTH_CrudePrev)) +
+  scale_fill_gradientn(name = "Mental Health Issues Rate %", colours = c("powderblue", "darkorchid1"), values = c(0, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Mental Health Issues in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$STROKE_CrudePrev)) +
+  scale_fill_gradientn(name = "Stroke Rate %", colours = c("darkslateblue", "cyan"), values = c(0, .3, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Stroke in", p)) +
+  theme(text = element_text(size=24))
+
+#Seattle
+p <- "Seattle"
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$PlcTrPop10)) +
+  scale_fill_gradientn(name = "Population", colours = c("royalblue4", "limegreen"), values = c(0, .4, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Population in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$CANCER_CrudePrev)) +
+  scale_fill_gradientn(name = "Cancer Rate %", colours = c("grey13", "cyan"), values = c(0, .5, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Cancer in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$CASTHMA_CrudePrev)) +
+  scale_fill_gradientn(name = "Asthma Rate %", colours = c("powderblue", "darkorchid1"), values = c(0, .4, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Asthma in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$OBESITY_CrudePrev)) +
+  scale_fill_gradientn(name = "Obesity Rate %", colours = c("royalblue4", "limegreen"), values = c(0, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Obesity in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$SLEEP_CrudePrev)) +
+  scale_fill_gradientn(name = "Sleep Deprivation Rate %", colours = c("grey13", "cyan"), values = c(0, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Sleep Deprivation in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$MHLTH_CrudePrev)) +
+  scale_fill_gradientn(name = "Mental Health Issues Rate %", colours = c("powderblue", "darkorchid1"), values = c(0, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Mental Health Issues in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$STROKE_CrudePrev)) +
+  scale_fill_gradientn(name = "Stroke Rate %", colours = c("darkslateblue", "cyan"), values = c(0, .3, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Stroke in", p)) +
+  theme(text = element_text(size=24))
+
+#Augusta
+p <- "Augusta"
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$PlcTrPop10)) +
+  scale_fill_gradientn(name = "Population", colours = c("royalblue4", "limegreen"), values = c(0, .4, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Population in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$CANCER_CrudePrev)) +
+  scale_fill_gradientn(name = "Cancer Rate %", colours = c("grey13", "cyan"), values = c(0, .5, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Cancer in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$CASTHMA_CrudePrev)) +
+  scale_fill_gradientn(name = "Asthma Rate %", colours = c("powderblue", "darkorchid1"), values = c(0, .4, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Asthma in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$OBESITY_CrudePrev)) +
+  scale_fill_gradientn(name = "Obesity Rate %", colours = c("royalblue4", "limegreen"), values = c(0, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Obesity in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$SLEEP_CrudePrev)) +
+  scale_fill_gradientn(name = "Sleep Deprivation Rate %", colours = c("grey13", "cyan"), values = c(0, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Sleep Deprivation in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$MHLTH_CrudePrev)) +
+  scale_fill_gradientn(name = "Mental Health Issues Rate %", colours = c("powderblue", "darkorchid1"), values = c(0, .8, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Mental Health Issues in", p)) +
+  theme(text = element_text(size=24))
+
+ggplot() +
+  geom_polygon(data = city_data2[city_data2$PlaceName.x == p, ], aes(x = long/(1e5), y = lat/(1e5), group = group, fill = city_data2[city_data2$PlaceName.x == p, ]$STROKE_CrudePrev)) +
+  scale_fill_gradientn(name = "Stroke Rate %", colours = c("darkslateblue", "cyan"), values = c(0, .3, 1)) +
+  labs(x = "Longitude", y = "Latitude", title = paste("Rates of Stroke in", p)) +
+  theme(text = element_text(size=24))
+
+#more maps - keep for now - excess
 library(acs)
 api.key.install(key = "76c9a712e6a536ca5be2caa356ccfe91ea408031")
 
-#leaflet - interesting if works
+#leaflet - interesting if works - excess
 library(leaflet)
 
 map2<-leaflet() %>%
